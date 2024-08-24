@@ -1,0 +1,27 @@
+{
+  "name": "videotube",
+  "version": "1.0.0",
+  "description": "Video streaming platform.",
+  "main": "src/index.js",
+  "type": "module",
+  "scripts": {
+    "start": "node src/index.js",
+    "dev": "nodemon src/index.js"
+  },
+  "keywords": [
+    "Nodejs",
+    "mongoose",
+    "express",
+    "backend"
+  ],
+  "author": "Mohamed Saleem",
+  "license": "ISC",
+  "devDependencies": {
+    "nodemon": "^3.1.4",
+    "prettier": "^3.3.3"
+  },
+  "dependencies": {
+    "express": "^4.19.2",
+    "mongoose": "^8.5.4"
+  }
+}
