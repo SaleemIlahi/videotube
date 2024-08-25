@@ -1,5 +1,6 @@
 import express from "express";
 import cors from "cors"
+import helathcheckRouter from "./routes/healthcheck.routes.js";
 
 // Initializing the Express application
 const app = express();
@@ -22,5 +23,8 @@ app.use(express.urlencoded({
 
 // Serving static files from the "public" directory
 app.use(express.static("public"))
+
+// Router config
+app.use("/api/v1/healthcheck",helathcheckRouter)
 
 export { app };
