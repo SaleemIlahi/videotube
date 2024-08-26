@@ -3,6 +3,7 @@ import cors from "cors"
 import helathcheckRouter from "./routes/healthcheck.routes.js";
 import logger from "./utils/logger.js";
 import morgan from "morgan";
+import cookiePraser from "cookie-parser";
 
 // Initializing the Express application
 const app = express();
@@ -43,6 +44,9 @@ app.use(express.urlencoded({
 
 // Serving static files from the "public" directory
 app.use(express.static("public"))
+
+// Configuring cookie praser middleware
+app.use(cookiePraser());
 
 // Router config
 app.use("/api/v1/healthcheck",helathcheckRouter)
