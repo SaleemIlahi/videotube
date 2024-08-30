@@ -1,5 +1,9 @@
 import { v2 as cloudinary } from "cloudinary";
 import fs from "fs";
+import dotenv from "dotenv";
+
+// config env again for cloudinary
+dotenv.config();
 
 // Configuration
 cloudinary.config({
@@ -13,10 +17,9 @@ const uploadOnCloudinary = async (localFilePath) => {
     if (!localFilePath) return null;
     const cloudinaryReponse = await cloudinary.uploader.upload(localFilePath, {
       resource_type: "auto",
+      folder: "videotube",
     });
-    console.log(
-      `File uploaded on cloudinary. File src: ${cloudinaryReponse.url}`
-    );
+    console.log(`File uploaded on cloudinary. File src: ${cloudinaryReponse.url}`);
     fs.unlinkSync(localFilePath);
     return cloudinaryReponse;
   } catch (error) {
@@ -25,4 +28,12 @@ const uploadOnCloudinary = async (localFilePath) => {
   }
 };
 
-export { uploadOnCloudinary };
+const deleteFromCloundinary = async (publicId) => {
+  try {
+    const result = await cloudinary.uploader.destroy(publicId);
+  } catch (error) {
+    return null;
+  }
+};
+
+export { uploadOnCloudinary, deleteFromCloundinary };
