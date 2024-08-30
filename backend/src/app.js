@@ -4,6 +4,8 @@ import helathcheckRouter from "./routes/healthcheck.routes.js";
 import logger from "./utils/logger.js";
 import morgan from "morgan";
 import cookiePraser from "cookie-parser";
+import userRouter from "./routes/user.routes.js";
+import { errorHandler } from "./middlewares/error.middlewares.js";
 
 // Initializing the Express application
 const app = express();
@@ -48,7 +50,11 @@ app.use(express.static("public"))
 // Configuring cookie praser middleware
 app.use(cookiePraser());
 
+// Middleware to handle error throw by ApiError
+app.use(errorHandler)
+
 // Router config
 app.use("/api/v1/healthcheck",helathcheckRouter)
+app.use("/api/v1/auth",userRouter)
 
 export { app };
