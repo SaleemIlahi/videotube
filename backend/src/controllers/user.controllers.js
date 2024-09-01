@@ -7,6 +7,29 @@ import {
   uploadOnCloudinary,
   deleteFromCloundinary,
 } from "../utils/cloudinary.js";
+import jwt from "jsonwebtoken";
+
+// Generating Access and Refresh Token
+const generateAccessAndRefreshToken = async (userId) => {
+  try {
+    const user = await User.findById(userId);
+    if (!user) {
+      throw new ApiError(404, "User does not exist");
+    }
+
+    const refreshToken = user.generateRefreshToken();
+    const accessToken = user.generateAccessToken();
+
+    user.refreshToken = refreshToken;
+    await user.save({ validateBeforeSave: false });
+    return { accessToken, refreshToken };
+  } catch (error) {
+    throw new ApiError(
+      500,
+      "Something went wrong while generating access and refresh tokens"
+    );
+  }
+};
 
 // validation schema for user data
 const registerJoiSchema = joi.object({
@@ -43,11 +66,11 @@ const registerJoiSchema = joi.object({
       "any.required": "Username is a required field",
     }),
   password: joi.string().trim().min(8).max(30).required().messages({
-    "string.base": "Username should be a type of string",
-    "string.empty": "Username cannot be an empty field",
-    "string.min": "Username should have a minimum length of {#limit}",
-    "string.max": "Username should have a minimum length of {#limit}",
-    "any.required": "Username is a required field",
+    "string.base": "Password should be a type of string",
+    "string.empty": "Password cannot be an empty field",
+    "string.min": "Password should have a minimum length of {#limit}",
+    "string.max": "Password should have a minimum length of {#limit}",
+    "any.required": "Password is a required field",
   }),
 });
 
@@ -77,7 +100,7 @@ const registerUser = asyncHandler(async (req, res) => {
   if (!avatarLocalPath) {
     throw new ApiError(409, "Avatar image is missing");
   }
-  
+
   let avatar;
   try {
     avatar = await uploadOnCloudinary(avatarLocalPath);
@@ -124,9 +147,131 @@ const registerUser = asyncHandler(async (req, res) => {
     if (coverImage) {
       await deleteFromCloundinary(coverImage.public_id);
     }
-    console.log(error)
+    console.log(error);
     throw new ApiError(500, "Something went wrong while registering a users");
   }
 });
 
-export { registerUser };
+// validation schema for userlogin data
+const loginJoiSchema = joi.object({
+  username: joi.string().trim().messages({
+    "any.required": "Username is a required field",
+  }),
+  password: joi.string().trim().required().messages({
+    "any.required": "Password is a required field",
+  }),
+});
+
+const loginUser = asyncHandler(async (req, res) => {
+  // Validating user data
+  const validateResult = loginJoiSchema.validate(req.body);
+  if (validateResult.error) {
+    const message = validateResult.error.details[0].message;
+    throw new ApiError(400, message);
+  }
+
+  const { username, password } = req.body;
+
+  // Check if user already exist
+  const isUserExisted = await User.findOne({
+    $or: [{ username }],
+  });
+
+  if (!isUserExisted) {
+    throw new ApiError(404, "Username not found");
+  }
+
+  // matching password
+  const isPasswordMatch = await isUserExisted.isPasswordCorrect(password);
+  if (!isPasswordMatch) {
+    throw new ApiError(401, "Invalid username or password");
+  }
+
+  const { accessToken, refreshToken } = await generateAccessAndRefreshToken(
+    isUserExisted._id
+  );
+
+  const loggedInUser = await User.findById(isUserExisted._id).select(
+    "-password -refreshToken"
+  );
+
+  let options = {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === "production",
+  };
+
+  return res
+    .status(200)
+    .cookie("accessToken", accessToken, options)
+    .cookie("refreshToken", refreshToken, options)
+    .json(
+      new ApiResponse(
+        200,
+        { user: loggedInUser, accessToken },
+        "User logged in successfully"
+      )
+    );
+});
+
+const logoutUser = asyncHandler(async (req, res) => {
+  await User.findByIdAndUpdate(
+    req.user._id,
+    {
+      $set: {
+        refreshToken: null,
+      },
+    },
+    { new: true }
+  );
+
+  let options = {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === "production",
+  };
+
+  return res
+    .status(200)
+    .clearCookie("accessToken", options)
+    .clearCookie("refreshToken", options)
+    .json(new ApiResponse(200, {}, "User logged out successfully"));
+});
+
+const refreshAccessToken = async (req, res) => {
+  const incomingRefreshToken = req.cookie.refreshToken;
+
+  if (!incomingRefreshToken) {
+    throw new ApiError(401, "Token expired");
+  }
+
+  try {
+    const decodedToken = jwt.verify(incomingRefreshToken, REFRESH_TOKEN_SECRET);
+    const user = await User.findById(decodedToken?._id);
+    if (!user) {
+      throw new ApiError(401, "Token expired");
+    }
+
+    if (incomingRefreshToken !== user?.refreshToken) {
+      throw new ApiError(401, "Token expired");
+    }
+
+    const { accessToken, refreshToken: newRefreshToken } =
+      await generateAccessAndRefreshToken(user._id);
+
+    let options = {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+    };
+
+    return res
+      .status(200)
+      .cookie("accessToken", accessToken, options)
+      .cookie("refreshToken", newRefreshToken, options)
+      .json(
+        new ApiResponse(200, { user: user, accessToken }, "Token refreshed")
+      );
+  } catch (error) {
+    throw new ApiError(500, "Something went wrong");
+  }
+};
+
+export { registerUser, loginUser, logoutUser };
