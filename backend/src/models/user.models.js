@@ -2,6 +2,12 @@ import mongoose, { Schema } from "mongoose";
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
 
+// Role Access
+const Roles = {
+  ADMIN: "admin",
+  USER: "user",
+};
+
 const userSchema = new Schema(
   {
     username: {
@@ -31,6 +37,11 @@ const userSchema = new Schema(
     coverImage: {
       type: String,
     },
+    role: {
+      type: String,
+      enum: Object.values(Roles),
+      default: Roles.USER,
+    },
     watchHistory: [
       {
         type: Schema.Types.ObjectId,
@@ -49,6 +60,19 @@ const userSchema = new Schema(
     timestamps: true,
   }
 );
+
+// Admin Role existing check
+userSchema.pre("save", async function (next) {
+  if (this.role === Roles.ADMIN) {
+    const existingAdmin = await this.constructor.findOne({
+      role: Roles.ADMIN,
+    });
+    if (existingAdmin && existingAdmin._id.toString() !== this._id.toString()) {
+      return next(new Error("Unauthorized"));
+    }
+  }
+  next();
+});
 
 // Hashing password before saving
 userSchema.pre("save", async function (next) {
