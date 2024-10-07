@@ -1,0 +1,36 @@
+@import "./config.module.scss";
+
+.auth_container {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+
+  &_body {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    border: 1px solid $c-g2;
+    width: 40%;
+    border-radius: 5px;
+
+    &.extend {
+      width: 50%;
+    }
+
+    &_header {
+      margin: 10px 0;
+    }
+
+    &_box {
+      width: 100%;
+      padding: 30px;
+      border-radius: 6px;
+    }
+  }
+
+
+}

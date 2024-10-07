@@ -1,0 +1,69 @@
+@import "./config.module.scss";
+
+.element_container {
+  width: 100%;
+//   height: 38px;
+  margin-bottom: 20px;
+}
+
+// Element Label
+.element_label{
+    font-weight: 400;
+    color: $c-g7;
+    margin-bottom: 6px;
+}
+
+// button
+.button{
+    width: fit-content;
+    height: 35px;
+    padding:8px 15px;
+    border-radius: 5px;
+    border: none;
+    cursor: pointer;
+    background: $c-b1;
+    color: $c-g10;
+    font-weight: 500;
+    font-size: 14px;
+}
+
+// Text Element scss
+.field_box {
+  width: 100%;
+  height: 38px;
+  border: 1px solid $c-g4;
+  border-radius: 5px;
+  overflow: hidden;
+
+  &.file{
+    height: 150px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    cursor: pointer;
+  }
+
+  input {
+    width: 100%;
+    height: 100%;
+    border: none;
+    outline: none;
+    background-color: none;
+    padding: 5px;
+    font-size: 14px;
+  }
+
+  input[type="file"]{
+    display: none;
+  }
+  .file_placeholder{
+    width: 100%;
+    height: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    color: $c-g7;
+    font-size: 14px;
+    cursor: pointer;
+  }
+}
