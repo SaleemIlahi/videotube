@@ -19,7 +19,9 @@ const uploadOnCloudinary = async (localFilePath) => {
       resource_type: "auto",
       folder: "videotube",
     });
-    console.log(`File uploaded on cloudinary. File src: ${cloudinaryReponse.url}`);
+    console.log(
+      `File uploaded on cloudinary. File src: ${cloudinaryReponse.url}`
+    );
     fs.unlinkSync(localFilePath);
     return cloudinaryReponse;
   } catch (error) {
