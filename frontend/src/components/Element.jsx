@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import S from "../styles/element.module.scss";
 
 const Label = (data) => {
@@ -56,6 +56,20 @@ const Password = (props) => {
 
 const File = (props) => {
   const { data, set, get } = props;
+  const [imageSrc, setImageSrc] = useState(null);
+  const handleImagePreview = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onload = () => {
+        setImageSrc(reader.result);
+      };
+      reader.readAsDataURL(file);
+      set(data.name, e.target.files[0]);
+    } else {
+      setImageSrc(null);
+    }
+  };
   return (
     <div className={S.field_box + " " + S.file}>
       <input
@@ -63,11 +77,15 @@ const File = (props) => {
         name={data.name}
         type="file"
         id={data.name}
-        // value={get(data.name) || null}
-        // onChange={(e) => set(data.name, e.target.value)}
+        onChange={handleImagePreview}
+        accept="image/* ,video/*"
       />
       <label className={S.file_placeholder} htmlFor={data.name}>
-        {data?.placeholder}
+        {imageSrc ? (
+          <img src={imageSrc} alt="image preview" />
+        ) : (
+          data?.placeholder
+        )}
       </label>
     </div>
   );
