@@ -1,5 +1,5 @@
 import express from "express";
-import cors from "cors"
+import cors from "cors";
 import helathcheckRouter from "./routes/healthcheck.routes.js";
 import logger from "./utils/logger.js";
 import morgan from "morgan";
@@ -10,7 +10,7 @@ import { errorHandler } from "./middlewares/error.middlewares.js";
 // Initializing the Express application
 const app = express();
 
-// Configuring logger Middleware 
+// Configuring logger Middleware
 const morganFormat = ":method :url :status :response-time ms";
 app.use(
   morgan(morganFormat, {
@@ -29,32 +29,40 @@ app.use(
 );
 
 // Configuring CORS middleware
-app.use(cors({
+app.use(
+  cors({
     origin: process.env.CORS_ORIGIN,
-    credentials: true
-}))
+    methods: process.env.CORS_METHODS,
+    allowedHeaders: process.env.CORS_HEADERS,
+    credentials: true,
+  })
+);
 
 // Middleware to parse JSON bodies with a size limit of 16kb
-app.use(express.json({
-    limit: "16kb"
-}))
+app.use(
+  express.json({
+    limit: "16kb",
+  })
+);
 
 // Middleware to parse URL-encoded bodies with extended option enabled
-app.use(express.urlencoded({
-    extended:true
-}))
+app.use(
+  express.urlencoded({
+    extended: true,
+  })
+);
 
 // Serving static files from the "public" directory
-app.use(express.static("public"))
+app.use(express.static("public"));
 
 // Configuring cookie praser middleware
 app.use(cookiePraser());
 
 // Middleware to handle error throw by ApiError
-app.use(errorHandler)
+app.use(errorHandler);
 
 // Router config
-app.use("/api/v1/healthcheck",helathcheckRouter)
-app.use("/api/v1/auth",userRouter)
+app.use("/api/v1/healthcheck", helathcheckRouter);
+app.use("/api/v1/auth", userRouter);
 
 export { app };
