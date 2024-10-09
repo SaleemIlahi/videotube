@@ -3,7 +3,16 @@ import S from "../styles/auth.module.scss";
 import Element from "../components/Element";
 
 export const AuthContainer = (props) => {
-  const { data, setFields, getFields, title, name } = props;
+  const {
+    data,
+    setFields,
+    getFields,
+    title,
+    name,
+    submit,
+    errorMsg,
+    setErrorMsg,
+  } = props;
   return (
     <div className={S.auth_container}>
       <div
@@ -15,18 +24,24 @@ export const AuthContainer = (props) => {
       >
         <h1 className={S.auth_container_body_header}>{title}</h1>
         <div className={S.auth_container_body_box}>
+          {errorMsg && (
+            <div className={S.auth_container_body_err}>{errorMsg}</div>
+          )}
           {data.map((o, i) => (
             <div key={i} className={S.auth_container_body_box_fields}>
               <Element
                 data={o}
-                set={(n, v) => setFields((prev) => ({ ...prev, [n]: v }))}
+                set={(n, v) => {
+                  setErrorMsg(null);
+                  setFields((prev) => ({ ...prev, [n]: v }));
+                }}
                 get={(n) => getFields[n]}
               />
             </div>
           ))}
           <Element
             data={{ type: "button", name: name, text: title }}
-            set={(e, n) => console.log(e, n)}
+            set={(e, n) => submit(e, n)}
           />
         </div>
       </div>
