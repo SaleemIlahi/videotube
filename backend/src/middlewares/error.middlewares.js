@@ -1,3 +1,5 @@
+import { ApiError } from "../utils/apiError.js";
+
 const errorHandler = (err, req, res, next) => {
   console.log("Error received in handler:", err); // Log the error
 

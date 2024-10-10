@@ -58,11 +58,11 @@ app.use(express.static("public"));
 // Configuring cookie praser middleware
 app.use(cookiePraser());
 
-// Middleware to handle error throw by ApiError
-app.use(errorHandler);
-
 // Router config
 app.use("/api/v1/healthcheck", helathcheckRouter);
 app.use("/api/v1/auth", userRouter);
+
+// Middleware to handle error throw by ApiError
+app.use(errorHandler);
 
 export { app };
