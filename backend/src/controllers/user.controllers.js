@@ -127,7 +127,7 @@ const registerUser = asyncHandler(async (req, res) => {
 
     // getting new created user
     const createdUser = await User.findById(newUser._id).select(
-      "-password -refreshToken"
+      "-password -refreshToken -role -createdAt -updatedAt -__v"
     );
 
     if (!createdUser) {
@@ -189,7 +189,7 @@ const loginUser = asyncHandler(async (req, res) => {
   );
 
   const loggedInUser = await User.findById(isUserExisted._id).select(
-    "-password -refreshToken"
+    "-password -refreshToken -role -createdAt -updatedAt -__v"
   );
 
   let options = {
