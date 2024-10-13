@@ -3,7 +3,7 @@ import cors from "cors";
 import helathcheckRouter from "./routes/healthcheck.routes.js";
 import logger from "./utils/logger.js";
 import morgan from "morgan";
-import cookiePraser from "cookie-parser";
+import cookieParser from "cookie-parser";
 import userRouter from "./routes/user.routes.js";
 import { errorHandler } from "./middlewares/error.middlewares.js";
 
@@ -32,8 +32,8 @@ app.use(
 app.use(
   cors({
     origin: process.env.CORS_ORIGIN,
-    methods: process.env.CORS_METHODS,
-    allowedHeaders: process.env.CORS_HEADERS,
+    methods: eval(process.env.CORS_METHODS),
+    allowedHeaders: eval(process.env.CORS_HEADERS),
     credentials: true,
   })
 );
@@ -56,7 +56,7 @@ app.use(
 app.use(express.static("public"));
 
 // Configuring cookie praser middleware
-app.use(cookiePraser());
+app.use(cookieParser());
 
 // Router config
 app.use("/api/v1/healthcheck", helathcheckRouter);
