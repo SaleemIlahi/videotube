@@ -10,6 +10,104 @@ import {
 import jwt from "jsonwebtoken";
 import mongoose from "mongoose";
 
+const access = {
+  admin: [
+    {
+      path: "/home",
+      component: "Home",
+      label: "Home",
+      id: "home",
+      isPrivate: true,
+    },
+    {
+      path: "/subscriptions",
+      component: "Subscriptions",
+      label: "Subscriptions",
+      id: "subscriptions",
+      isPrivate: true,
+    },
+    {
+      path: "/tweets",
+      component: "Tweets",
+      label: "Tweets",
+      id: "tweets",
+      isPrivate: true,
+    },
+    {
+      path: "/playlist",
+      component: "Playlist",
+      label: "Playlist",
+      id: "playlist",
+      isPrivate: true,
+    },
+    {
+      path: "/studio",
+      component: "Studio",
+      label: "Your Videos",
+      id: "studio",
+      isPrivate: true,
+    },
+    {
+      path: "/dashboard",
+      component: "Dashboard",
+      label: "Dashboard",
+      id: "dashboard",
+      isPrivate: true,
+    },
+    {
+      path: "/users",
+      component: "Users",
+      label: "Users",
+      id: "users",
+      isPrivate: true,
+    },
+  ],
+  user: [
+    {
+      path: "/home",
+      component: "Home",
+      label: "Home",
+      id: "home",
+      isPrivate: true,
+    },
+    {
+      path: "/subscriptions",
+      component: "Subscriptions",
+      label: "Subscriptions",
+      id: "subscriptions",
+      isPrivate: true,
+    },
+    {
+      path: "/tweets",
+      component: "Tweets",
+      label: "Tweets",
+      id: "tweets",
+      isPrivate: true,
+    },
+    {
+      path: "/playlist",
+      component: "Playlist",
+      label: "Playlist",
+      id: "playlist",
+      isPrivate: true,
+    },
+    {
+      path: "/studio",
+      component: "Studio",
+      label: "Your Videos",
+      id: "studio",
+      isPrivate: true,
+    },
+    {
+      path: "/dashboard",
+      component: "Dashboard",
+      label: "Dashboard",
+      id: "dashboard",
+      isPrivate: true,
+    },
+  ],
+};
+
 // Generating Access and Refresh Token
 const generateAccessAndRefreshToken = async (userId) => {
   try {
@@ -189,7 +287,7 @@ const loginUser = asyncHandler(async (req, res) => {
   );
 
   const loggedInUser = await User.findById(isUserExisted._id).select(
-    "-password -refreshToken -role -createdAt -updatedAt -__v"
+    "-password -refreshToken -createdAt -updatedAt -__v -_id"
   );
 
   let options = {
@@ -204,7 +302,7 @@ const loginUser = asyncHandler(async (req, res) => {
     .json(
       new ApiResponse(
         200,
-        { user: loggedInUser, accessToken },
+        { user: loggedInUser, routes: access[loggedInUser.role], accessToken },
         "User logged in successfully"
       )
     );
@@ -234,15 +332,18 @@ const logoutUser = asyncHandler(async (req, res) => {
 });
 
 const refreshAccessToken = async (req, res) => {
-  const incomingRefreshToken = req.cookie.refreshToken;
+  const incomingRefreshToken = req.cookies.refreshToken;
 
   if (!incomingRefreshToken) {
     throw new ApiError(401, "Token expired");
   }
 
   try {
-    const decodedToken = jwt.verify(incomingRefreshToken, REFRESH_TOKEN_SECRET);
-    const user = await User.findById(decodedToken?._id);
+    const decodedToken = jwt.verify(
+      incomingRefreshToken,
+      process.env.REFRESH_TOKEN_SECRET
+    );
+    const user = await User.findById(decodedToken?.id);
     if (!user) {
       throw new ApiError(401, "Token expired");
     }
@@ -264,9 +365,14 @@ const refreshAccessToken = async (req, res) => {
       .cookie("accessToken", accessToken, options)
       .cookie("refreshToken", newRefreshToken, options)
       .json(
-        new ApiResponse(200, { user: user, accessToken }, "Token refreshed")
+        new ApiResponse(
+          200,
+          { user: user, routes: access[user.role], accessToken },
+          "Token refreshed"
+        )
       );
   } catch (error) {
+    console.log(error);
     throw new ApiError(500, "Something went wrong");
   }
 };
