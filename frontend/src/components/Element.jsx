@@ -56,18 +56,23 @@ const Password = (props) => {
 
 const File = (props) => {
   const { data, set, get } = props;
-  const [imageSrc, setImageSrc] = useState(null);
+  const { Icon } = data;
+  const [url, setUrl] = useState(null);
   const handleImagePreview = (e) => {
     const file = e.target.files[0];
     if (file) {
       const reader = new FileReader();
       reader.onload = () => {
-        setImageSrc(reader.result);
+        setUrl(() => ({
+          src: reader.result,
+          file: file,
+        }));
+
+        set(data.name, e.target.files[0], reader.result);
       };
       reader.readAsDataURL(file);
-      set(data.name, e.target.files[0]);
     } else {
-      setImageSrc(null);
+      setUrl(null);
     }
   };
   return (
@@ -78,15 +83,26 @@ const File = (props) => {
         type="file"
         id={data.name}
         onChange={handleImagePreview}
-        accept="image/* ,video/*"
+        accept={data.accept}
       />
-      <label className={S.file_placeholder} htmlFor={data.name}>
-        {imageSrc ? (
-          <img src={imageSrc} alt="image preview" />
-        ) : (
-          data?.placeholder
-        )}
-      </label>
+      {data.accept === "video/mp4" && url?.src ? (
+        <div className={S.video_preview}>
+          <video>
+            <source src={url.src} />
+          </video>
+        </div>
+      ) : (
+        <label className={S.file_upload} htmlFor={data.name}>
+          {data.accept === "image/*" && url?.src ? (
+            <img src={url.src} alt={data.name} />
+          ) : (
+            <>
+              <Icon />
+              <div className={S.file_placeholder}>{data?.placeholder}</div>
+            </>
+          )}
+        </label>
+      )}
     </div>
   );
 };
@@ -107,14 +123,16 @@ const Button = (props) => {
 const Element = (props) => {
   const { data } = props;
   return (
-    <div className={S.element_container}>
-      {data?.label && <Label {...data} />}
-      {(data?.type === "text" && <Text {...props} />) ||
-        (data?.type === "password" && <Password {...props} />) ||
-        (data?.type === "email" && <Email {...props} />) ||
-        (data?.type === "file" && <File {...props} />) ||
-        (data?.type === "button" && <Button {...props} />)}
-    </div>
+    data.type && (
+      <div className={S.element_container}>
+        {data?.label && <Label {...data} />}
+        {(data?.type === "text" && <Text {...props} />) ||
+          (data?.type === "password" && <Password {...props} />) ||
+          (data?.type === "email" && <Email {...props} />) ||
+          (data?.type === "file" && <File {...props} />) ||
+          (data?.type === "button" && <Button {...props} />)}
+      </div>
+    )
   );
 };
 
