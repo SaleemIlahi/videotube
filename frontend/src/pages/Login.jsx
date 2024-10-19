@@ -1,6 +1,10 @@
 import React, { useState } from "react";
 import S from "../styles/auth.module.scss";
 import Element from "../components/Element";
+import { login } from "../utils/api";
+import { useNavigate } from "react-router-dom";
+import { useDispatch } from "react-redux";
+import { LOGIN } from "../features/authSlice.js";
 
 export const AuthContainer = (props) => {
   const {
@@ -27,22 +31,33 @@ export const AuthContainer = (props) => {
           {errorMsg && (
             <div className={S.auth_container_body_err}>{errorMsg}</div>
           )}
-          {data.map((o, i) => (
-            <div key={i} className={S.auth_container_body_box_fields}>
-              <Element
-                data={o}
-                set={(n, v) => {
-                  setErrorMsg(null);
-                  setFields((prev) => ({ ...prev, [n]: v }));
-                }}
-                get={(n) => getFields[n]}
-              />
-            </div>
-          ))}
-          <Element
-            data={{ type: "button", name: name, text: title }}
-            set={(e, n) => submit(e, n)}
-          />
+          <div className={S.auth_container_body_box_fields}>
+            {data.map((o, i) => (
+              <div
+                key={i}
+                className={
+                  o?.flex
+                    ? S.auth_container_body_box_fields_item + " " + S.flex
+                    : S.auth_container_body_box_fields_item
+                }
+              >
+                <Element
+                  data={o}
+                  set={(n, v) => {
+                    setErrorMsg(null);
+                    setFields((prev) => ({ ...prev, [n]: v }));
+                  }}
+                  get={(n) => getFields[n]}
+                />
+              </div>
+            ))}
+          </div>
+          <div className={S.auth_container_body_box_button}>
+            <Element
+              data={{ type: "button", name: name, text: title }}
+              set={(e, n) => submit(e, n)}
+            />
+          </div>
         </div>
       </div>
     </div>
@@ -51,9 +66,10 @@ export const AuthContainer = (props) => {
 
 const Login = () => {
   const [inputData, setInputData] = useState({
-    name: "",
+    username: "",
     password: "",
   });
+  const [errorMsg, setErrorMsg] = useState(null);
   const inputSchema = [
     {
       type: "text",
@@ -66,6 +82,28 @@ const Login = () => {
       placeholder: "Password",
     },
   ];
+  const navigate = useNavigate();
+  const dispatch = useDispatch();
+
+  const handleSubmit = async (e, n) => {
+    try {
+      const emptyFieldsCheck = Object.entries(inputData).filter(
+        ([k, v]) => v === ""
+      );
+      const emptyFieldsName = emptyFieldsCheck.map(([k, v]) => k).join(", ");
+      if (emptyFieldsCheck.length > 0) {
+        setErrorMsg(`${emptyFieldsName} is required fields`);
+        return;
+      }
+      const res = await login(JSON.stringify(inputData), "POST");
+      if (res.statusCode === 200) {
+        dispatch(LOGIN(res.data));
+        navigate("/home");
+      }
+    } catch (error) {
+      console.log(error);
+    }
+  };
   return (
     <>
       <AuthContainer
@@ -74,6 +112,9 @@ const Login = () => {
         data={inputSchema}
         title="Sign In"
         name="sign-in"
+        submit={(e, n) => handleSubmit(e, n)}
+        errorMsg={errorMsg}
+        setErrorMsg={setErrorMsg}
       />
     </>
   );
