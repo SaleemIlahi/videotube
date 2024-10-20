@@ -122,17 +122,22 @@ const Button = (props) => {
 
 const Textarea = (props) => {
   const { data, set, get } = props;
+  const contentRef = useRef(null);
+
+  useEffect(() => {
+    if (contentRef.current) {
+      contentRef.current.innerText = get(data.name) || "";
+    }
+  }, [data.name, get]);
   return (
     <div className={S.field_box}>
       <div className={S.textarea}>
         <div
           contentEditable
           className={S.content}
-          onInput={(e) => set(data.name, e.target)}
+          onInput={(e) => set(data.name, e.target.innerText)}
           placeholder={data.placeholder}
-        >
-          {get(data.name)}
-        </div>
+        ></div>
         {data.characterLimit && (
           <div className={S.character_count}>
             {get(data.name)?.length ? get(data.name)?.length : 0} /
