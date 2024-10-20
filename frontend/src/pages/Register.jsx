@@ -1,7 +1,6 @@
 import React, { useState } from "react";
 import { AuthContainer } from "./Login";
 import { register } from "../utils/api";
-import Icons from "../components/Icons";
 
 const Register = () => {
   const [inputData, setInputData] = useState({
@@ -38,7 +37,7 @@ const Register = () => {
       accept: "image/*",
       placeholder: "Upload Your Profile Image",
       flex: true,
-      Icon: () => <Icons name="image_upload" />,
+      icon: "image_upload",
     },
     {
       type: "file",
@@ -46,7 +45,7 @@ const Register = () => {
       accept: "image/*",
       placeholder: "Upload Your Cover Image",
       flex: true,
-      Icon: () => <Icons name="image_upload" />,
+      icon: "image_upload",
     },
   ];
 
