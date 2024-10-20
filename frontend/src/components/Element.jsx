@@ -1,5 +1,6 @@
-import React, { useState } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import S from "../styles/element.module.scss";
+import Icons from "./Icons";
 
 const Label = (data) => {
   const { label } = data;
@@ -56,7 +57,6 @@ const Password = (props) => {
 
 const File = (props) => {
   const { data, set, get } = props;
-  const { Icon } = data;
   const [url, setUrl] = useState(null);
   const handleImagePreview = (e) => {
     const file = e.target.files[0];
@@ -97,7 +97,7 @@ const File = (props) => {
             <img src={url.src} alt={data.name} />
           ) : (
             <>
-              <Icon />
+              {data.icon && <Icons name={data.icon} />}
               <div className={S.file_placeholder}>{data?.placeholder}</div>
             </>
           )}
@@ -120,6 +120,140 @@ const Button = (props) => {
   );
 };
 
+const Textarea = (props) => {
+  const { data, set, get } = props;
+  return (
+    <div className={S.field_box}>
+      <div className={S.textarea}>
+        <div
+          contentEditable
+          className={S.content}
+          onInput={(e) => set(data.name, e.target)}
+          placeholder={data.placeholder}
+        >
+          {get(data.name)}
+        </div>
+        {data.characterLimit && (
+          <div className={S.character_count}>
+            {get(data.name)?.length ? get(data.name)?.length : 0} /
+            {data.characterLimit}
+          </div>
+        )}
+      </div>
+    </div>
+  );
+};
+
+const MultiSelect = (props) => {
+  const { data, set, get } = props;
+  const optionRef = useRef(null);
+  const [search, setSearch] = useState(null);
+  const [optionsData, setOpitonsData] = useState(data.options);
+  const [optionsOpen, setOptionsOpen] = useState(false);
+  const [listValue, setListValue] = useState([]);
+  const handleClickOutside = (event) => {
+    if (optionRef.current && !optionRef.current.contains(event.target)) {
+      setOptionsOpen(false);
+    }
+  };
+  useEffect(() => {
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, []);
+
+  useEffect(() => {
+    setOpitonsData(
+      search
+        ? data.options.filter((val) =>
+            val.name.toString()?.toLowerCase().includes(search)
+          )
+        : data.options
+    );
+  }, [search]);
+
+  const handleCheckValue = (e) => {
+    let value = e.target.getAttribute("data-name");
+    let id = e.target.id;
+    let checked = e.target.checked;
+    if (checked) {
+      setListValue((l) => [...l, { id, name: value }]);
+    } else {
+      setListValue((l) => l.filter((o) => o.id !== id));
+    }
+  };
+
+  const handleListAdd = () => {
+    set(data.name, listValue);
+    setOptionsOpen(false);
+  };
+  return (
+    <div className={S.multiselect_cnt}>
+      <div
+        className={S.value_selected}
+        onClick={() => setOptionsOpen((o) => !o)}
+      >
+        {get(data.name) ? (
+          <div className={S.value}>
+            {get(data.name)?.length > 1
+              ? get(data.name)?.length + " " + data.name
+              : get(data.name)?.[0].name}
+          </div>
+        ) : (
+          <div className={S.placeholder}>{data.placeholder}</div>
+        )}
+        <div className={S.arrow}>
+          <Icons name="down_arrow" />
+        </div>
+      </div>
+      {optionsOpen && (
+        <div className={S.dropdown} ref={optionRef}>
+          <div className={S.search}>
+            <input
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              type="text"
+              placeholder="Search"
+            />
+            <Icons name="search" />
+          </div>
+          <div className={S.options}>
+            {optionsData.length > 0 ? (
+              optionsData?.map((o, i) => (
+                <div
+                  key={o.id}
+                  htmlFor={o.id}
+                  className={S.options_items}
+                  data-id={o.id}
+                >
+                  <label htmlFor={o.id} class={S.custom_checkbox}>
+                    <input
+                      onChange={handleCheckValue}
+                      id={o.id}
+                      name={data.name}
+                      data-name={o.name}
+                      checked={listValue?.some((c) => c.id === o.id)}
+                      type="checkbox"
+                    />
+                    <span></span>
+                    {o.name}
+                  </label>
+                </div>
+              ))
+            ) : (
+              <div className={S.no_option_found}>No options found</div>
+            )}
+          </div>
+          <div className={S.footer}>
+            <button onClick={handleListAdd}>Done</button>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+};
+
 const Element = (props) => {
   const { data } = props;
   return (
@@ -130,6 +264,8 @@ const Element = (props) => {
           (data?.type === "password" && <Password {...props} />) ||
           (data?.type === "email" && <Email {...props} />) ||
           (data?.type === "file" && <File {...props} />) ||
+          (data?.type === "textarea" && <Textarea {...props} />) ||
+          (data?.type === "multiselect" && <MultiSelect {...props} />) ||
           (data?.type === "button" && <Button {...props} />)}
       </div>
     )
