@@ -1,0 +1,72 @@
+@import "./config.module.scss";
+
+.layout_cnt {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    justify-content: space-between;
+
+    &_sidebar {
+        flex-basis: 16%;
+        width: 100%;
+        height: 100%;
+        border-right: 1px solid $c-g2;
+    }
+
+    &_content {
+        flex-basis: 84%;
+        width: 100%;
+        height: 100%;
+        display: flex;
+        flex-direction: column;
+
+        &_header {
+            width: 100%;
+            height: 60px;
+            padding: 5px;
+            border-bottom: 1px solid $c-g2;
+            position: sticky;
+            top: 0;
+        }
+    }
+}
+
+// SideBar
+.sidebar_cnt {
+    width: 100%;
+    height: 100%;
+
+    &_logo {
+        width: 100%;
+        height: 60px;
+        padding: 5px;
+        border-bottom: 1px solid $c-g2;
+        // background: $c-b0;
+    }
+
+    &_menu {
+        width: 100%;
+
+        &_link {
+            width: 100%;
+            display: block;
+            text-decoration: none;
+
+            &_item {
+                width: 100%;
+                padding: 20px;
+                cursor: pointer;
+                color: $c-g10;
+
+                &:hover {
+                    background: $c-g1;
+                }
+
+            }
+
+            &_active {
+                background: $c-g1;
+            }
+        }
+    }
+}
