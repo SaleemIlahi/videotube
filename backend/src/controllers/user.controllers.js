@@ -293,6 +293,8 @@ const loginUser = asyncHandler(async (req, res) => {
   let options = {
     httpOnly: true,
     secure: process.env.NODE_ENV === "production",
+    sameSite: "strict",
+    maxAge: 10 * 24 * 60 * 60 * 1000,
   };
 
   return res
@@ -322,6 +324,8 @@ const logoutUser = asyncHandler(async (req, res) => {
   let options = {
     httpOnly: true,
     secure: process.env.NODE_ENV === "production",
+    sameSite: "strict",
+    maxAge: 10 * 24 * 60 * 60 * 1000,
   };
 
   return res
@@ -358,6 +362,8 @@ const refreshAccessToken = async (req, res) => {
     let options = {
       httpOnly: true,
       secure: process.env.NODE_ENV === "production",
+      sameSite: "strict",
+      maxAge: 10 * 24 * 60 * 60 * 1000,
     };
 
     return res
@@ -376,6 +382,44 @@ const refreshAccessToken = async (req, res) => {
     throw new ApiError(500, "Something went wrong");
   }
 };
+
+const verifyAuth = asyncHandler(async (req, res) => {
+  const accessToken = req.cookies?.accessToken;
+  const refreshToken = req.cookies?.refreshToken;
+
+  if (!accessToken) {
+    return res.status(401).json(new ApiResponse(401, null, "Unauthorized"));
+  }
+
+  const decodedToken = jwt.verify(accessToken, process.env.ACCESS_TOKEN_SECRET);
+
+  const user = await User.findById(decodedToken?.id).select(
+    "-password -refreshToken"
+  );
+
+  if (!user) {
+    return res.status(401).json(new ApiResponse(401, null, "Unauthorized"));
+  }
+
+  let options = {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === "production",
+    sameSite: "strict",
+    maxAge: 10 * 24 * 60 * 60 * 1000,
+  };
+
+  return res
+    .status(200)
+    .cookie("accessToken", accessToken, options)
+    .cookie("refreshToken", refreshToken, options)
+    .json(
+      new ApiResponse(
+        200,
+        { user: user, routes: access[user.role], accessToken },
+        "Authenticated"
+      )
+    );
+});
 
 const getUserChannelProfile = async (req, res) => {
   const { username } = req.params;
@@ -464,4 +508,4 @@ const getWatchHistory = async (req, res) => {
   ]);
 };
 
-export { registerUser, loginUser, logoutUser, refreshAccessToken };
+export { registerUser, loginUser, logoutUser, refreshAccessToken, verifyAuth };
