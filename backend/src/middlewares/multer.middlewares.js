@@ -1,5 +1,6 @@
 import multer from "multer";
 import path from "path";
+import { ApiError } from "../utils/apiError.js";
 
 const storage = multer.diskStorage({
   destination: function (req, file, cb) {
@@ -7,7 +8,10 @@ const storage = multer.diskStorage({
   },
   filename: function (req, file, cb) {
     const uniqueSuffix = Date.now() + "-" + Math.round(Math.random() * 1e9);
-    cb(null, file.fieldname + "-" + uniqueSuffix + path.extname(file.originalname));
+    cb(
+      null,
+      file.fieldname + "-" + uniqueSuffix + path.extname(file.originalname)
+    );
   },
 });
 
@@ -23,7 +27,8 @@ const fileFilter = function (req, file, cb) {
     return cb(null, true);
   } else {
     cb(
-      new Error(
+      ApiError(
+        415,
         "File upload only supports the following file types: " + filetypes
       )
     );
