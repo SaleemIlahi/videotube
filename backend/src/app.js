@@ -5,6 +5,7 @@ import logger from "./utils/logger.js";
 import morgan from "morgan";
 import cookieParser from "cookie-parser";
 import userRouter from "./routes/user.routes.js";
+import videoRouter from "./routes/video.routes.js";
 import { errorHandler } from "./middlewares/error.middlewares.js";
 
 // Initializing the Express application
@@ -61,6 +62,7 @@ app.use(cookieParser());
 // Router config
 app.use("/api/v1/healthcheck", helathcheckRouter);
 app.use("/api/v1/auth", userRouter);
+app.use("/api/v1/video", videoRouter);
 
 // Middleware to handle error throw by ApiError
 app.use(errorHandler);
