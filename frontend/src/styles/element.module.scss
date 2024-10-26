@@ -172,6 +172,10 @@
     border-radius: 5px;
     background: $c-g0;
 
+    &:hover {
+      border: 1px solid $c-g10;
+    }
+
     .placeholder {
       color: $c-g4;
     }
