@@ -19,9 +19,23 @@ const uploadOnCloudinary = async (localFilePath) => {
       resource_type: "auto",
       folder: "videotube",
     });
-    console.log(
-      `File uploaded on cloudinary. File src: ${cloudinaryReponse.url}`
-    );
+    fs.unlinkSync(localFilePath);
+    return cloudinaryReponse;
+  } catch (error) {
+    fs.unlinkSync(localFilePath);
+    return null;
+  }
+};
+
+const uploadHLSOnCloudinary = async (localFilePath, folderPath) => {
+  try {
+    if (!localFilePath) return null;
+    const cloudinaryReponse = await cloudinary.uploader.upload(localFilePath, {
+      folder: folderPath,
+      resource_type: "raw",
+      use_filename: true,
+      unique_filename: false,
+    });
     fs.unlinkSync(localFilePath);
     return cloudinaryReponse;
   } catch (error) {
@@ -38,4 +52,4 @@ const deleteFromCloundinary = async (publicId) => {
   }
 };
 
-export { uploadOnCloudinary, deleteFromCloundinary };
+export { uploadOnCloudinary, uploadHLSOnCloudinary, deleteFromCloundinary };
