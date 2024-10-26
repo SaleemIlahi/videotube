@@ -19,6 +19,18 @@ const postMethod = async (props) => {
   } catch (error) {}
 };
 
+const getMethod = async (props) => {
+  try {
+    const { url } = props;
+    const res = await fetch(url, {
+      credentials: "include",
+    });
+
+    const output = await res.json();
+    return output;
+  } catch (error) {}
+};
+
 export const register = async (b) => {
   try {
     const res = await postMethod({
@@ -32,11 +44,30 @@ export const register = async (b) => {
   }
 };
 
-export const login = async (b) => {
+export const login = async (b, t) => {
+  try {
+    if (t === "POST") {
+      const res = await postMethod({
+        url: `${baseUrl}/auth/login`,
+        b,
+        header: true,
+      });
+      return res;
+    } else {
+      const res = await getMethod({
+        url: `${baseUrl}/auth/login`,
+      });
+      return res;
+    }
+  } catch (error) {
+    console.log(error);
+  }
+};
+
+export const logout = async () => {
   try {
     const res = await postMethod({
-      url: `${baseUrl}/auth/login`,
-      b,
+      url: `${baseUrl}/auth/logout`,
       header: true,
     });
     return res;
