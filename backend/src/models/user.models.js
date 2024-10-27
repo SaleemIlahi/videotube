@@ -42,6 +42,15 @@ const userSchema = new Schema(
       enum: Object.values(Roles),
       default: Roles.USER,
     },
+    verified: {
+      type: Boolean,
+      default: false,
+    },
+    videoLimit: {
+      type: Number,
+      max: [2, "Video upload credits exceeded"],
+      default: 0,
+    },
     watchHistory: [
       {
         type: Schema.Types.ObjectId,
