@@ -5,6 +5,7 @@ import { login } from "../utils/api";
 import { useNavigate } from "react-router-dom";
 import { useDispatch } from "react-redux";
 import { LOGIN } from "../features/authSlice.js";
+import { useAsyncHandler } from "../utils/asyncHandler.js";
 
 export const AuthContainer = (props) => {
   const {
@@ -85,8 +86,8 @@ const Login = () => {
   const navigate = useNavigate();
   const dispatch = useDispatch();
 
-  const handleSubmit = async (e, n) => {
-    try {
+  const [handleSubmit] = useAsyncHandler(
+    async (e, n) => {
       const emptyFieldsCheck = Object.entries(inputData).filter(
         ([k, v]) => v === ""
       );
@@ -96,14 +97,19 @@ const Login = () => {
         return;
       }
       const res = await login(JSON.stringify(inputData), "POST");
-      if (res.statusCode === 200) {
-        dispatch(LOGIN(res.data));
-        navigate("/home");
-      }
-    } catch (error) {
-      console.log(error);
+      return res;
+    },
+    {
+      onSuccess: (res) => {
+        if (res.statusCode === 200) {
+          dispatch(LOGIN(res.data));
+          navigate("/home");
+        } else {
+          setErrorMsg(res.message);
+        }
+      },
     }
-  };
+  );
   return (
     <>
       <AuthContainer
