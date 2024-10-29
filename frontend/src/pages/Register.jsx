@@ -1,6 +1,9 @@
 import React, { useState } from "react";
 import { AuthContainer } from "./Login";
 import { register } from "../utils/api";
+import { useAsyncHandler } from "../utils/asyncHandler.js";
+import { useDispatch } from "react-redux";
+import { ERROR } from "../features/errorSlice.js";
 
 const Register = () => {
   const [inputData, setInputData] = useState({
@@ -10,6 +13,7 @@ const Register = () => {
     fullname: "",
   });
   const [errorMsg, setErrorMsg] = useState(null);
+  const dispatch = useDispatch();
   const inputSchema = [
     {
       type: "text",
@@ -54,8 +58,8 @@ const Register = () => {
     return regex.test(email);
   }
 
-  const handleSubmit = async (e, n) => {
-    try {
+  const [handleSubmit] = useAsyncHandler(
+    async (e, n) => {
       const emptyFieldsCheck = Object.entries(inputData).filter(
         ([k, v]) => v === ""
       );
@@ -89,11 +93,34 @@ const Register = () => {
         formData.append("coverImage", inputData.cover_img?.[0]);
       }
       const res = await register(formData);
-      console.log(res);
-    } catch (error) {
-      console.log(error);
+      return res;
+    },
+    {
+      onSuccess: (res) => {
+        if (res.statusCode === 200) {
+          dispatch(
+            ERROR({
+              message: res.message,
+              type: "success",
+              timeline: true,
+              status: true,
+            })
+          );
+        } else if (res.statusCode >= 400 && res.statusCode <= 500) {
+          setErrorMsg(res.message);
+        } else {
+          dispatch(
+            ERROR({
+              message: res.message,
+              type: "danger",
+              timeline: true,
+              status: true,
+            })
+          );
+        }
+      },
     }
-  };
+  );
   return (
     <>
       <AuthContainer
