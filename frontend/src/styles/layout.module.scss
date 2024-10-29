@@ -71,6 +71,7 @@
 
                             &:hover {
                                 background: $c-g1;
+                                cursor: pointer;
                             }
                         }
                     }
@@ -117,6 +118,78 @@
                 background: $c-g1;
                 cursor: pointer;
             }
+        }
+    }
+}
+
+// Toast
+.toast_cnt {
+    width: clamp(300px, 400px, 500px);
+    height: 70px;
+    box-shadow: 1px 1px 5px rgba(0, 0, 0, 0.2);
+    position: absolute;
+    top: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    border-radius: 8px;
+    text-align: start;
+    text-overflow: ellipsis;
+    background: $c-g0;
+    overflow: hidden;
+
+    .toast_body {
+        width: 100%;
+        height: 94%;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 10px;
+        transition: all 1s;
+
+        .message_box {
+            width: 100%;
+            height: 100%;
+            display: flex;
+            align-items: center;
+            font-weight: 500;
+
+            .message {
+                margin-left: 10px;
+            }
+        }
+
+        .close {
+            cursor: pointer;
+        }
+    }
+
+
+    .timeline {
+        width: 100%;
+        height: 5px;
+        background: $c-g5;
+        animation: timeline 5s linear;
+
+        @keyframes timeline {
+            0% {
+                width: 0;
+            }
+
+            100% {
+                width: 100%;
+            }
+        }
+    }
+
+    &.danger {
+        .timeline {
+            background: $c-r10;
+        }
+    }
+
+    &.success {
+        .timeline {
+            background: $c-gr10;
         }
     }
 }

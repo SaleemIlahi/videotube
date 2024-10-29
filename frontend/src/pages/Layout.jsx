@@ -1,9 +1,11 @@
-import React, { useState } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import S from "../styles/layout.module.scss";
 import { useSelector, useDispatch } from "react-redux";
 import { NavLink, Outlet, useNavigate } from "react-router-dom";
 import { logout } from "../utils/api";
 import { LOGOUT } from "../features/authSlice";
+import Icons from "../components/Icons";
+import { useAsyncHandler } from "../utils/asyncHandler.js";
 
 const Sidebar = () => {
   const routes = useSelector((state) => state.authReducer.auth?.routes);
@@ -29,17 +31,73 @@ const Sidebar = () => {
     </div>
   );
 };
-const Layout = () => {
-  const [profileMenuActive, setProfileMenuActive] = useState(false);
-  const dispatch = useDispatch();
-  const navigate = useNavigate();
-  const userLogout = async () => {
-    const res = await logout();
-    if (res.statusCode === 200) {
-      navigate("/", { replace: true });
-      dispatch(LOGOUT());
+
+const TOAST = (props) => {
+  const { message, type, timeline } = props;
+  return (
+    <div className={S.toast_cnt + " " + S[type]}>
+      <div className={S.toast_body}>
+        <div className={S.message_box}>
+          <Icons name={type} />
+          <div className={S.message}>{message}</div>
+        </div>
+        <div className={S.close}>
+          <Icons name="close" />
+        </div>
+      </div>
+      <div className={S.timeline}></div>
+    </div>
+  );
+};
+
+const Menu = (props) => {
+  const { active, setActive, list } = props;
+  const listRef = useRef(null);
+  const handleClickOutside = (event) => {
+    if (listRef.current && !listRef.current.contains(event.target)) {
+      setActive(false);
     }
   };
+  useEffect(() => {
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, []);
+  return (
+    <div className={S.menu} ref={listRef}>
+      {active && (
+        <ul className={S.list}>
+          {list.map((o) => (
+            <li key={o.id} onClick={o.fun}>
+              {o.name}
+            </li>
+          ))}
+        </ul>
+      )}
+    </div>
+  );
+};
+
+const Layout = () => {
+  const [profileMenuActive, setProfileMenuActive] = useState(false);
+  const error = useSelector((state) => state.errorReducer.error);
+  const dispatch = useDispatch();
+  const navigate = useNavigate();
+  const [userLogout] = useAsyncHandler(
+    async () => {
+      const res = await logout();
+      return res;
+    },
+    {
+      onSuccess: (res) => {
+        if (res.statusCode === 200) {
+          navigate("/", { replace: true });
+          dispatch(LOGOUT());
+        }
+      },
+    }
+  );
 
   const menuList = [
     {
@@ -67,23 +125,18 @@ const Layout = () => {
               className={S.avatar}
               onClick={() => setProfileMenuActive((p) => !p)}
             ></div>
-            <div className={S.menu}>
-              {profileMenuActive && (
-                <ul className={S.list}>
-                  {menuList.map((o) => (
-                    <li key={o.id} onClick={o.fun}>
-                      {o.name}
-                    </li>
-                  ))}
-                </ul>
-              )}
-            </div>
+            <Menu
+              active={profileMenuActive}
+              list={menuList}
+              setActive={setProfileMenuActive}
+            />
           </div>
         </div>
         <div className={S.layout_cnt_content_body}>
           <Outlet />
         </div>
       </div>
+      {error && <TOAST {...error} />}
     </div>
   );
 };
