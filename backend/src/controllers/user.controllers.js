@@ -273,7 +273,7 @@ const loginUser = asyncHandler(async (req, res) => {
   });
 
   if (!isUserExisted) {
-    throw new ApiError(404, "Username not found");
+    throw new ApiError(401, "Invalid username or password");
   }
 
   // matching password
