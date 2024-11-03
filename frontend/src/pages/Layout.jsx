@@ -6,6 +6,7 @@ import { logout } from "../utils/api";
 import { LOGOUT } from "../features/authSlice";
 import Icons from "../components/Icons";
 import { useAsyncHandler } from "../utils/asyncHandler.js";
+import { ERROR } from "../features/errorSlice.js";
 
 const Sidebar = () => {
   const routes = useSelector((state) => state.authReducer.auth?.routes);
@@ -33,7 +34,14 @@ const Sidebar = () => {
 };
 
 const TOAST = (props) => {
+  const dispatch = useDispatch();
   const { message, type, timeline } = props;
+
+  useEffect(() => {
+    setTimeout(() => {
+      dispatch(ERROR(null));
+    }, 5000);
+  }, []);
   return (
     <div className={S.toast_cnt + " " + S[type]}>
       <div className={S.toast_body}>
@@ -41,11 +49,11 @@ const TOAST = (props) => {
           <Icons name={type} />
           <div className={S.message}>{message}</div>
         </div>
-        <div className={S.close}>
+        <div className={S.close} onClick={() => dispatch(ERROR(null))}>
           <Icons name="close" />
         </div>
       </div>
-      <div className={S.timeline}></div>
+      {timeline && <div className={S.timeline}></div>}
     </div>
   );
 };
