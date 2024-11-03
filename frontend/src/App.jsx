@@ -46,7 +46,7 @@ const NonProtectedRoute = ({ children }) => {
   return children;
 };
 
-const Loading = () => {
+export const Loading = () => {
   return (
     <div className={S.loading_screen}>
       <div className={S.loading}>
