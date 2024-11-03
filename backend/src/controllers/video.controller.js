@@ -8,6 +8,8 @@ import { fileURLToPath } from "url";
 import { uploadHLSOnCloudinary } from "../utils/cloudinary.js";
 import { User } from "../models/user.models.js";
 import { Video } from "../models/video.models.js";
+import joi from "joi";
+import escapeHtml from "escape-html";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -56,6 +58,9 @@ const readM3u8File = async (
     return {
       status: true,
       video: videoDetials.filter((v) => v.original_filename === "index")[0],
+      thumbnail: videoDetials.filter(
+        (v) => v.original_filename === "thumbnail"
+      )[0],
     };
   } catch (error) {
     fs.rmdir(join(__dirname, "..", "..", path, transcodedVideo.folder));
@@ -108,16 +113,18 @@ const uploadVideo = asyncHandler(async (req, res) => {
     throw new ApiError(500, "Something went wrong while uploading video");
   }
 
-  const video = Video.create({
+  const video = await Video.create({
     videoFile: uploadedVideoDetails.video.secure_url,
-    thumbnail: "",
-    title: req.files?.video?.[0]?.filename,
-    description: `${req.files?.video?.[0]?.filename} - description`,
-    originalFileName: req.files?.video?.[0]?.filename,
+    thumbnail: uploadedVideoDetails.thumbnail.secure_url,
+    title: req.files?.video?.[0]?.originalname,
+    description: `${req.files?.video?.[0]?.originalname} - description`,
+    originalFileName: req.files?.video?.[0]?.originalname,
     owner: user._id,
   });
 
-  if (!video) {
+  const createdVideo = await Video.findById(video._id);
+
+  if (!createdVideo) {
     throw new ApiError(
       500,
       "Something went wrong while creating video details"
@@ -126,7 +133,7 @@ const uploadVideo = asyncHandler(async (req, res) => {
 
   const response = {
     url: uploadedVideoDetails.video.secure_url,
-    video: video,
+    video: createdVideo,
   };
   res
     .status(200)
@@ -162,4 +169,51 @@ const getAllvideo = asyncHandler(async (req, res) => {
   res.status(200).json(new ApiResponse(200, response, "All videos"));
 });
 
-export { uploadVideo, getVideoById, getAllvideo };
+const videoJoiSchema = joi.object({
+  title: joi.string().trim().messages({
+    "any.required": "Title is a required field",
+  }),
+  description: joi.string().trim().messages({
+    "any.required": "Description is a required field",
+  }),
+});
+
+const updateVideoDetails = asyncHandler(async (req, res) => {
+  // Validating video data
+  const validateResult = videoJoiSchema.validate(req.body, {
+    stripUnknown: true,
+  });
+  if (validateResult.error) {
+    const message = validateResult.error.details[0].message;
+    throw new ApiError(400, message);
+  }
+  const sanitizedData = {};
+  for (const key in req.body) {
+    sanitizedData[key] = escapeHtml(req.body[key]);
+  }
+  req.validatedData = sanitizedData;
+  const { _id, title, description, playlist } = req.validatedData;
+  const videoUpdate = await Video.findByIdAndUpdate(
+    _id,
+    {
+      title,
+      description,
+    },
+    { new: true }
+  );
+
+  if (!videoUpdate) {
+    throw new ApiError(
+      500,
+      "Something went wrong while updating video details"
+    );
+  }
+
+  res
+    .status(200)
+    .json(
+      new ApiResponse(200, videoUpdate, "Video details updated successfully")
+    );
+});
+
+export { uploadVideo, getVideoById, getAllvideo, updateVideoDetails };
