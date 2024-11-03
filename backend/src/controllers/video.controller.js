@@ -26,7 +26,7 @@ const readM3u8File = async (
     let segments = lines
       .filter((line) => line.endsWith(".ts"))
       .map((line) => line.trim());
-    segments = [...segments, "index.m3u8"];
+    segments = [...segments, "index.m3u8", "thumbnail.jpg"];
 
     for (const segment of segments) {
       try {
@@ -91,7 +91,7 @@ const uploadVideo = asyncHandler(async (req, res) => {
     "index.m3u8"
   );
 
-  if (!transcodedVideo.status) {
+  if (!transcodedVideo?.status) {
     throw new ApiError(500, "Something went wrong while transcoding video");
   }
 
@@ -104,7 +104,7 @@ const uploadVideo = asyncHandler(async (req, res) => {
     uploadHLSOnCloudinary
   );
 
-  if (!uploadedVideoDetails.status) {
+  if (!uploadedVideoDetails?.status) {
     throw new ApiError(500, "Something went wrong while uploading video");
   }
 
@@ -133,4 +133,33 @@ const uploadVideo = asyncHandler(async (req, res) => {
     .json(new ApiResponse(200, response, "Video uploaded successfully"));
 });
 
-export { uploadVideo };
+const getVideoById = asyncHandler(async (req, res) => {
+  const user = req.user;
+  const allVideo = await Video.find({ owner: user._id }).sort({
+    createdAt: -1,
+  });
+  if (!allVideo) {
+    new ApiError(404, "No video upload");
+  }
+
+  const response = {
+    videos: allVideo,
+  };
+
+  res.status(200).json(new ApiResponse(200, response, "All videos"));
+});
+
+const getAllvideo = asyncHandler(async (req, res) => {
+  const allVideo = await Video.find().limit(50);
+  if (!allVideo) {
+    new ApiError(404, "No video upload");
+  }
+
+  const response = {
+    videos: allVideo,
+  };
+
+  res.status(200).json(new ApiResponse(200, response, "All videos"));
+});
+
+export { uploadVideo, getVideoById, getAllvideo };
