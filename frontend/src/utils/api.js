@@ -59,3 +59,28 @@ export const logout = async () => {
   });
   return res;
 };
+
+export const uploadVideo = async (b) => {
+  const res = await postMethod({
+    url: `${baseUrl}/video/upload`,
+    b,
+    header: false,
+  });
+  return res;
+};
+
+export const updateVideo = async (b) => {
+  const res = await postMethod({
+    url: `${baseUrl}/video/update`,
+    b,
+    header: true,
+  });
+  return res;
+};
+
+export const videosByUser = async () => {
+  const res = await getMethod({
+    url: `${baseUrl}/video/videos`,
+  });
+  return res;
+};
