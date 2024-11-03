@@ -75,8 +75,14 @@ const File = (props) => {
       setUrl(null);
     }
   };
+
+  useEffect(() => {
+    setUrl({
+      src: get(data.name),
+    });
+  }, []);
   return (
-    <div className={S.field_box + " " + S.file}>
+    <div style={data.style} className={S.field_box + " " + S.file}>
       <input
         style={data?.style}
         name={data.name}
@@ -84,6 +90,7 @@ const File = (props) => {
         id={data.name}
         onChange={handleImagePreview}
         accept={data.accept}
+        disabled={data?.disabled ?? false}
       />
       {data.accept === "video/mp4" && url?.src ? (
         <div className={S.video_preview}>
@@ -92,15 +99,33 @@ const File = (props) => {
           </video>
         </div>
       ) : (
-        <label className={S.file_upload} htmlFor={data.name}>
-          {data.accept === "image/*" && url?.src ? (
-            <img src={url.src} alt={data.name} />
-          ) : (
-            <>
-              {data.icon && <Icons name={data.icon} />}
-              <div className={S.file_placeholder}>{data?.placeholder}</div>
-            </>
+        <label
+          className={
+            data.accept === "image/*" && url?.src
+              ? S.file_upload + " " + S.file_upload_after
+              : S.file_upload
+          }
+          htmlFor={data.name}
+          style={
+            data?.accept === "image/*"
+              ? url?.src && {
+                  backgroundColor: "rgba(0, 0, 0, 0.3)",
+                  backgroundImage: `url(${url?.src})`,
+                  backgroundPosition: "center",
+                  backgroundSize: "cover",
+                  backgroundRepeat: "no-repeat",
+                  backgroundBlendMode: "overlay",
+                  borderRadius: "5px",
+                }
+              : {}
+          }
+        >
+          {data.icon && (
+            <div className={S.file_icon}>
+              <Icons name={data.icon} />
+            </div>
           )}
+          <div className={S.file_placeholder}>{data?.placeholder}</div>
         </label>
       )}
     </div>
@@ -122,26 +147,19 @@ const Button = (props) => {
 
 const Textarea = (props) => {
   const { data, set, get } = props;
-  const contentRef = useRef(null);
 
-  useEffect(() => {
-    if (contentRef.current) {
-      contentRef.current.innerText = get(data.name) || "";
-    }
-  }, [data.name, get]);
   return (
     <div className={S.field_box}>
       <div className={S.textarea}>
-        <div
-          contentEditable
+        <textarea
           className={S.content}
-          onInput={(e) => set(data.name, e.target.innerText)}
+          onChange={(e) => set(data.name, e.target.value)}
           placeholder={data.placeholder}
-        ></div>
+          value={get(data.name)}
+        ></textarea>
         {data.characterLimit && (
           <div className={S.character_count}>
-            {get(data.name)?.length ? get(data.name)?.length : 0} /
-            {data.characterLimit}
+            {get(data.name)?.length || 0} /{data.characterLimit}
           </div>
         )}
       </div>
@@ -199,11 +217,11 @@ const MultiSelect = (props) => {
         className={S.value_selected}
         onClick={() => setOptionsOpen((o) => !o)}
       >
-        {get(data.name) ? (
+        {get(data.name).length > 0 ? (
           <div className={S.value}>
             {get(data.name)?.length > 1
               ? get(data.name)?.length + " " + data.name
-              : get(data.name)?.[0].name}
+              : get(data.name)?.[0]?.name}
           </div>
         ) : (
           <div className={S.placeholder}>{data.placeholder}</div>

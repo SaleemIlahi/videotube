@@ -50,6 +50,7 @@
     cursor: pointer;
     border: none;
     padding: 10px;
+    background: $c-g0;
     background-image: url("data:image/svg+xml,%3csvg width='100%' height='100%' xmlns='http://www.w3.org/2000/svg'%3e%3crect width='100%25' height='100%25' fill='none' stroke='%23b3b3b3' stroke-width='2' stroke-dasharray='6%2c%2014' stroke-dashoffset='0' stroke-linecap='square'/%3e%3c/svg%3e");
 
     &:hover {
@@ -97,12 +98,11 @@
     justify-content: center;
     align-items: center;
     cursor: pointer;
-    z-index: 1;
+    overflow: hidden;
 
-    img {
-      width: 90%;
-      height: 90%;
-      object-fit: contain;
+    .img {
+      width: 100%;
+      height: 100%;
     }
 
     .file_placeholder {
@@ -110,6 +110,13 @@
       font-size: 14px;
       text-align: center;
       cursor: pointer;
+      z-index: 1;
+    }
+
+    &.file_upload_after {
+      .file_placeholder {
+        color: $c-g1;
+      }
     }
   }
 
@@ -139,8 +146,8 @@
       overflow-y: auto;
       word-wrap: break-word;
       word-break: break-all;
-
-
+      border: none;
+      resize: none;
 
       &::-webkit-scrollbar {
         display: none;
