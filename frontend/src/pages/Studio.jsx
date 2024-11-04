@@ -1,4 +1,11 @@
-import React, { useState, useEffect, memo, useMemo, useCallback } from "react";
+import React, {
+  useState,
+  useEffect,
+  memo,
+  useMemo,
+  useCallback,
+  useRef,
+} from "react";
 import S from "../styles/studio.module.scss";
 import Modal from "../components/Modal";
 import Element from "../components/Element";
@@ -9,6 +16,7 @@ import { useDispatch } from "react-redux";
 import { ERROR } from "../features/errorSlice";
 import Table from "../components/Table";
 import { Loading } from "../App";
+import { observer } from "../utils/observer";
 
 const UploadVideo = memo(({ initialValue, close }) => {
   const dispatch = useDispatch();
@@ -281,6 +289,7 @@ const VideoList = (props) => {
   const { editModal } = props;
   const dispatch = useDispatch();
   const [tableBody, setTableBody] = useState([]);
+  const tableRef = useRef(null);
 
   const dateFormat = (date) => {
     const dt = new Date(date);
@@ -345,7 +354,12 @@ const VideoList = (props) => {
                 value: (
                   <div className={S.video_box}>
                     <div className={S.thumbnail}>
-                      <img src={v.thumbnail} alt={v.title} />
+                      <img
+                        data-src={v.thumbnail}
+                        src=""
+                        alt={v.title}
+                        loading="lazy"
+                      />
                     </div>
                     <div className={S.details}>
                       <div className={S.title}>{v.title}</div>
@@ -465,13 +479,44 @@ const VideoList = (props) => {
     },
   ];
 
+  useEffect(() => {
+    const imageObserver = observer(
+      (entries) => {
+        entries.forEach((e) => {
+          if (e.isIntersecting) {
+            const imageColumn = e.target.children[1];
+            const imageTag = imageColumn.querySelector("[data-src]");
+            const imageUrl = imageTag.getAttribute("data-src");
+            imageTag.src = imageUrl;
+            imageObserver.unobserve(e.target);
+          }
+        });
+      },
+      {
+        rootMargin: "50px",
+      }
+    );
+
+    if (tableRef.current) {
+      const rows = tableRef.current.querySelectorAll("tbody tr");
+      rows.forEach((row) => {
+        imageObserver.observe(row);
+      });
+    }
+  }, [tableBody]);
+
   return (
     <div className={S.videolist_cnt}>
       {tableBody.length > 0 ? (
-        <Table tableHead={tableHead} tableBody={tableBody} />
+        <Table
+          tableRef={tableRef}
+          tableHead={tableHead}
+          tableBody={tableBody}
+        />
       ) : (
         <div className={S.video_empty}>
           <img
+            loading="lazy"
             src="https://res.cloudinary.com/do63p55lo/image/upload/v1730211540/videotube/asset/video_fl0bpm.svg"
             alt="video"
           />
