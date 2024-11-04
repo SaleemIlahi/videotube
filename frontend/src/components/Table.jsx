@@ -2,9 +2,9 @@ import React from "react";
 import S from "../styles/table.module.scss";
 
 function Table(props) {
-  const { tableHead, tableBody } = props;
+  const { tableHead, tableBody, tableRef } = props;
   return (
-    <div className={S.table_cnt}>
+    <div className={S.table_cnt} ref={tableRef}>
       <table>
         <thead>
           <tr>
