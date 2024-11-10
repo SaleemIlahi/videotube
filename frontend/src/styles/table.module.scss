@@ -10,17 +10,15 @@
 
         thead {
             position: sticky;
-            top: 50px;
+            top: 0;
             background: $c-g0;
+            outline: 1px solid $c-g2;
+            outline-offset: -1px;
 
             th {
                 font-weight: 500;
-                border-top: 1px solid $c-g2;
-                border-bottom: 1px solid $c-g2;
                 padding: 10px;
                 text-align: start;
-                position: sticky;
-                top: 50px;
             }
         }
 
@@ -29,7 +27,6 @@
 
             tr {
                 td {
-                    border-top: 1px solid $c-g2;
                     border-bottom: 1px solid $c-g2;
                     padding: 10px;
                     text-align: start;
