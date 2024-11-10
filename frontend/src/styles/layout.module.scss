@@ -5,6 +5,7 @@
     height: 100%;
     display: flex;
     justify-content: space-between;
+    overflow: hidden;
 
     &_sidebar {
         flex-basis: 16%;
@@ -24,7 +25,7 @@
             flex-basis: 7.72%;
             width: 100%;
             height: 100%;
-            padding: 5px 15px;
+            padding: 9.6px 15px;
             background: $c-g0;
             border-bottom: 1px solid $c-g2;
             position: sticky;
@@ -71,6 +72,17 @@
                             padding: 10px;
                             cursor: pointer;
 
+                            .channel_details {
+                                .channel_id {
+                                    font-weight: 600;
+                                }
+
+                                .channel_name {
+                                    color: $c-g7;
+                                    font-size: 14px;
+                                }
+                            }
+
                             &:hover {
                                 background: $c-g1;
                                 cursor: pointer;
@@ -85,7 +97,6 @@
             flex-basis: 90%;
             width: 100%;
             height: 100%;
-            overflow-y: auto;
         }
     }
 }
