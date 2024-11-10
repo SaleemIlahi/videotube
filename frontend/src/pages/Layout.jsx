@@ -59,10 +59,15 @@ const TOAST = (props) => {
 };
 
 const Menu = (props) => {
-  const { active, setActive, list } = props;
+  const { active, setActive, list, user } = props;
   const listRef = useRef(null);
   const handleClickOutside = (event) => {
-    if (listRef.current && !listRef.current.contains(event.target)) {
+    const avatar = document.querySelector(`.${S.avatar}`);
+    if (
+      listRef.current &&
+      !listRef.current.contains(event.target) &&
+      !avatar.contains(event.target)
+    ) {
       setActive(false);
     }
   };
@@ -76,6 +81,12 @@ const Menu = (props) => {
     <div className={S.menu} ref={listRef}>
       {active && (
         <ul className={S.list}>
+          <li>
+            <div className={S.channel_details}>
+              <div className={S.channel_id}>{user.fullname}</div>
+              <div className={S.channel_name}>@{user.username}</div>
+            </div>
+          </li>
           {list.map((o) => (
             <li key={o.id} onClick={o.fun}>
               {o.name}
@@ -90,6 +101,7 @@ const Menu = (props) => {
 const Layout = () => {
   const [profileMenuActive, setProfileMenuActive] = useState(false);
   const error = useSelector((state) => state.errorReducer.error);
+  const user = useSelector((state) => state.authReducer.auth.user);
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const [userLogout] = useAsyncHandler(
@@ -137,6 +149,7 @@ const Layout = () => {
               active={profileMenuActive}
               list={menuList}
               setActive={setProfileMenuActive}
+              user={user}
             />
           </div>
         </div>
