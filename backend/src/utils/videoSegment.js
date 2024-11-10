@@ -30,18 +30,14 @@ const runFFmpeg = async (inputFileName, outputFileName) => {
       if (error) {
         reject({ staus: false, message: `Error: ${error.message}` });
       } else if (stderr) {
-        resolve({
-          status: true,
-          message: "Video Transcoded",
-          folder: inputFileName.split(".")[0],
-          filePath: `public/segment/${outputDirName}/index.m3u8`,
-        });
+        reject({ staus: false, message: `Error: ${stderr}` });
       } else {
         resolve({
           status: true,
           message: "Video Transcoded",
           folder: inputFileName.split(".")[0],
           filePath: `public/segment/${outputDirName}/index.m3u8`,
+          metadata: stdout,
         });
       }
     });
