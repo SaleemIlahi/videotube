@@ -17,6 +17,7 @@ import { ERROR } from "../features/errorSlice";
 import Table from "../components/Table";
 import { Loading } from "../App";
 import { observer } from "../utils/observer";
+import { dateFormat } from "../utils/time";
 
 const UploadVideo = memo(({ initialValue, close }) => {
   const dispatch = useDispatch();
@@ -290,33 +291,6 @@ const VideoList = (props) => {
   const dispatch = useDispatch();
   const [tableBody, setTableBody] = useState([]);
   const tableRef = useRef(null);
-
-  const dateFormat = (date) => {
-    const dt = new Date(date);
-    const month = [
-      "Jan",
-      "Feb",
-      "Mar",
-      "Apr",
-      "May",
-      "Jun",
-      "Jul",
-      "Aug",
-      "Sep",
-      "Oct",
-      "Nov",
-      "Dec",
-    ];
-    const d = dt.getDate().toString().padStart(2, "0");
-    const m = month[dt.getMonth()];
-    const y = dt.getFullYear();
-    const h = dt.getHours().toString().padStart(2, "0");
-    const mns = dt.getMinutes().toString().padStart(2, "0");
-    const sec = dt.getSeconds().toString().padStart(2, "0");
-    const f = Number(h) >= 12 ? "PM" : "AM";
-
-    return { date: `${d} ${m} ${y}`, time: `${h}:${mns}:${sec} ${f}` };
-  };
 
   const [d] = useAsyncHandler(
     async () => {
