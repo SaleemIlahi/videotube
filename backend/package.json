@@ -6,7 +6,8 @@
   "type": "module",
   "scripts": {
     "start": "node src/index.js",
-    "dev": "nodemon src/index.js"
+    "dev": "nodemon src/index.js",
+    "build": "esbuild src/index.js --bundle --minify --sourcemap --platform=node --outfile=dist/bundle.js"
   },
   "keywords": [
     "Nodejs",
@@ -17,6 +18,7 @@
   "author": "Mohamed Saleem",
   "license": "ISC",
   "devDependencies": {
+    "esbuild": "^0.24.0",
     "nodemon": "^3.1.4",
     "prettier": "^3.3.3"
   },
