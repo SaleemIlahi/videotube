@@ -1,10 +1,10 @@
 import { Router } from "express";
 import {
   uploadVideo,
-  getVideoById,
+  getVideoByUserId,
   getAllvideo,
   updateVideoDetails,
-} from "../controllers/video.controller.js";
+} from "../controllers/video.controllers.js";
 import { upload } from "../middlewares/multer.middlewares.js";
 import { verifyJwt } from "../middlewares/auth.middlewares.js";
 
@@ -20,7 +20,7 @@ videoRouter.route("/upload").post(
   ]),
   uploadVideo
 );
-videoRouter.route("/videos").get(verifyJwt, getVideoById);
+videoRouter.route("/videos").get(verifyJwt, getVideoByUserId);
 videoRouter.route("/allvideos").get(verifyJwt, getAllvideo);
 videoRouter.route("/update").post(verifyJwt, updateVideoDetails);
 
