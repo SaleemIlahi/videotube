@@ -287,7 +287,7 @@ const loginUser = asyncHandler(async (req, res) => {
   );
 
   const loggedInUser = await User.findById(isUserExisted._id).select(
-    "-password -refreshToken -createdAt -updatedAt -__v -_id"
+    "-password -refreshToken -createdAt -updatedAt -__v"
   );
 
   let options = {
