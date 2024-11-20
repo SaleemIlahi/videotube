@@ -7,9 +7,15 @@ import cookieParser from "cookie-parser";
 import userRouter from "./routes/user.routes.js";
 import videoRouter from "./routes/video.routes.js";
 import { errorHandler } from "./middlewares/error.middlewares.js";
+import subscibeRouter from "./routes/subscription.routes.js";
+import likeRouter from "./routes/like.routes.js";
+import { rateLimit } from "./middlewares/ratelimiter.middlewares.js";
 
 // Initializing the Express application
 const app = express();
+
+// Rate limit middle
+app.use(rateLimit);
 
 // Configuring logger Middleware
 const morganFormat = ":method :url :status :response-time ms";
@@ -63,6 +69,8 @@ app.use(cookieParser());
 app.use("/api/v1/healthcheck", helathcheckRouter);
 app.use("/api/v1/auth", userRouter);
 app.use("/api/v1/video", videoRouter);
+app.use("/api/v1/subscribe", subscibeRouter);
+app.use("/api/v1/like", likeRouter);
 
 // Middleware to handle error throw by ApiError
 app.use(errorHandler);
