@@ -10,12 +10,19 @@ import { errorHandler } from "./middlewares/error.middlewares.js";
 import subscibeRouter from "./routes/subscription.routes.js";
 import likeRouter from "./routes/like.routes.js";
 import { rateLimit } from "./middlewares/ratelimiter.middlewares.js";
+import responseTime from "response-time";
+import { monitoring } from "./utils/monitoring.js";
+import { trackerRouter } from "./routes/tracker.routes.js";
+import { analyticsRouter } from "./routes/analytics.routes.js";
 
 // Initializing the Express application
 const app = express();
 
+// Prometheus & Grafana monitoring config
+app.use(responseTime(monitoring));
+
 // Rate limit middle
-app.use(rateLimit);
+// app.use(rateLimit);
 
 // Configuring logger Middleware
 const morganFormat = ":method :url :status :response-time ms";
@@ -39,8 +46,8 @@ app.use(
 app.use(
   cors({
     origin: process.env.CORS_ORIGIN,
-    methods: eval(process.env.CORS_METHODS),
-    allowedHeaders: eval(process.env.CORS_HEADERS),
+    methods: process.env.CORS_METHODS.split(","),
+    allowedHeaders: process.env.CORS_HEADERS.split(","),
     credentials: true,
   })
 );
@@ -71,6 +78,13 @@ app.use("/api/v1/auth", userRouter);
 app.use("/api/v1/video", videoRouter);
 app.use("/api/v1/subscribe", subscibeRouter);
 app.use("/api/v1/like", likeRouter);
+app.use("/api/v1/tracker", trackerRouter);
+app.use("/api/v1/analytics", analyticsRouter);
+app.get("/metrics", async (req, res) => {
+  res.setHeader("Content-Type", client.register.contentType);
+  const metrics = await client.register.metrics();
+  res.send(metrics);
+});
 
 // Middleware to handle error throw by ApiError
 app.use(errorHandler);
