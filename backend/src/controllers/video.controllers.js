@@ -147,9 +147,76 @@ const uploadVideo = asyncHandler(async (req, res) => {
 
 const getVideoByUserId = asyncHandler(async (req, res) => {
   const user = req.user;
-  const allVideo = await Video.find({ owner: user._id }).sort({
-    createdAt: -1,
-  });
+  const allVideo = await Video.aggregate([
+    {
+      $match: user._id ? { owner: new mongoose.Types.ObjectId(user._id) } : {},
+    },
+    {
+      $lookup: {
+        from: "subscriptions",
+        let: {
+          ownerId: "$owner",
+        },
+        pipeline: [
+          {
+            $match: {
+              $expr: {
+                $and: [{ $eq: ["$channel", "$$ownerId"] }],
+              },
+            },
+          },
+        ],
+        as: "subscribers",
+      },
+    },
+    {
+      $lookup: {
+        from: "likes",
+        let: {
+          videoId: "$_id",
+        },
+        pipeline: [
+          {
+            $match: {
+              $expr: {
+                $and: [{ $eq: ["$video", "$$videoId"] }],
+              },
+            },
+          },
+        ],
+        as: "likesCount",
+      },
+    },
+    {
+      $lookup: {
+        from: "trackers",
+        localField: "_id",
+        foreignField: "videoId",
+        as: "impressions",
+      },
+    },
+    {
+      $addFields: {
+        views: { $size: "$impressions" },
+        likes: { $size: "$likesCount" },
+      },
+    },
+    {
+      $project: {
+        _id: 1,
+        thumbnail: 1,
+        title: 1,
+        views: 1,
+        createdAt: 1,
+        updatedAt: 1,
+        videoFile: 1,
+        duration: 1,
+        description: 1,
+        owner: 1,
+        likes: 1,
+      },
+    },
+  ]);
   if (!allVideo) {
     new ApiError(404, "No video upload");
   }
@@ -253,10 +320,19 @@ const getAllvideo = asyncHandler(async (req, res) => {
       },
     },
     {
+      $lookup: {
+        from: "trackers",
+        localField: "_id",
+        foreignField: "videoId",
+        as: "impressions",
+      },
+    },
+    {
       $addFields: {
         isSubscribed: { $gt: [{ $size: "$subscribedTo" }, 0] },
         isLike: { $gt: [{ $size: "$LikeTo" }, 0] },
         subscribeCount: { $size: "$subscribers" },
+        views: { $size: "$impressions" },
         likeCount: { $size: "$likesCount" },
       },
     },
