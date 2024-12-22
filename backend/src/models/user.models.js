@@ -61,6 +61,17 @@ const userSchema = new Schema(
       type: String,
       required: [true, "Password is required"],
     },
+    geo: {
+      country: { type: String },
+      state: { type: String },
+      city: { type: String },
+    },
+    device: {
+      browser: { type: String },
+      type: { type: String },
+      brand: { type: String },
+      os: { type: String },
+    },
     refreshToken: {
       type: String,
     },
