@@ -9,6 +9,7 @@ import {
 } from "../utils/cloudinary.js";
 import jwt from "jsonwebtoken";
 import mongoose from "mongoose";
+import { location } from "../utils/location.js";
 
 const access = {
   admin: [
@@ -26,13 +27,13 @@ const access = {
       id: "subscriptions",
       isPrivate: true,
     },
-    {
-      path: "/tweets",
-      component: "Tweets",
-      label: "Tweets",
-      id: "tweets",
-      isPrivate: true,
-    },
+    // {
+    //   path: "/tweets",
+    //   component: "Tweets",
+    //   label: "Tweets",
+    //   id: "tweets",
+    //   isPrivate: true,
+    // },
     {
       path: "/playlist",
       component: "Playlist",
@@ -48,10 +49,10 @@ const access = {
       isPrivate: true,
     },
     {
-      path: "/dashboard",
-      component: "Dashboard",
-      label: "Dashboard",
-      id: "dashboard",
+      path: "/analytics",
+      component: "Analytics",
+      label: "Analytics",
+      id: "analytics",
       isPrivate: true,
     },
     {
@@ -77,13 +78,13 @@ const access = {
       id: "subscriptions",
       isPrivate: true,
     },
-    {
-      path: "/tweets",
-      component: "Tweets",
-      label: "Tweets",
-      id: "tweets",
-      isPrivate: true,
-    },
+    // {
+    //   path: "/tweets",
+    //   component: "Tweets",
+    //   label: "Tweets",
+    //   id: "tweets",
+    //   isPrivate: true,
+    // },
     {
       path: "/playlist",
       component: "Playlist",
@@ -99,17 +100,17 @@ const access = {
       isPrivate: true,
     },
     {
-      path: "/dashboard",
-      component: "Dashboard",
-      label: "Dashboard",
-      id: "dashboard",
+      path: "/analytics",
+      component: "Analytics",
+      label: "Analytics",
+      id: "analytics",
       isPrivate: true,
     },
   ],
 };
 
 // Generating Access and Refresh Token
-const generateAccessAndRefreshToken = async (userId) => {
+const generateAccessAndRefreshToken = async (userId, geo, device) => {
   try {
     const user = await User.findById(userId);
     if (!user) {
@@ -118,6 +119,11 @@ const generateAccessAndRefreshToken = async (userId) => {
 
     const refreshToken = user.generateRefreshToken();
     const accessToken = user.generateAccessToken();
+
+    if (geo && device) {
+      user.geo = geo;
+      user.device = device;
+    }
 
     user.refreshToken = refreshToken;
     await user.save({ validateBeforeSave: false });
@@ -282,8 +288,24 @@ const loginUser = asyncHandler(async (req, res) => {
     throw new ApiError(401, "Invalid username or password");
   }
 
+  const { ipGeoData, userAgentData } = await location(req);
+  const geo = {
+    country: ipGeoData.country_name,
+    state: ipGeoData.state_prov,
+    city: ipGeoData.city,
+  };
+
+  const device = {
+    browser: userAgentData.name,
+    type: userAgentData.device.type,
+    brand: userAgentData.device.brand,
+    os: userAgentData.operatingSystem.name,
+  };
+
   const { accessToken, refreshToken } = await generateAccessAndRefreshToken(
-    isUserExisted._id
+    isUserExisted._id,
+    geo,
+    device
   );
 
   const loggedInUser = await User.findById(isUserExisted._id).select(
