@@ -15,9 +15,9 @@ function HlsPlayer(props) {
       hls.on(Hls.Events.MANIFEST_PARSED, () => {
         if (play) {
           videoRef.current.play();
+          videoRef.current.id = "trackedVideo";
         }
       });
-
       return () => {
         if (hls) {
           hls.destroy();
@@ -28,9 +28,15 @@ function HlsPlayer(props) {
   return (
     <div className={S.hls_player}>
       {play ? (
-        <video ref={videoRef} controls={controls} autoPlay={play}>
-          <source type={type} src={src} />
-        </video>
+        <video
+          ref={videoRef}
+          autoPlay={play}
+          poster={thumbnail}
+          playsInline
+          controls={controls}
+          src={src}
+          type={type}
+        ></video>
       ) : (
         <div className={S.thumbnail} onClick={() => setPlay(true)}>
           <img src={thumbnail} alt={thumbnail} />

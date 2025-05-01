@@ -4,6 +4,59 @@ import { register } from "../utils/api";
 import { useAsyncHandler } from "../utils/asyncHandler.js";
 import { useDispatch } from "react-redux";
 import { ERROR } from "../features/errorSlice.js";
+import S from "../styles/multistepform.module.scss";
+import Element from "../components/Element";
+import useMultiStepForm from "../utils/MultiStepForm.js";
+
+const StepContainer = (props) => {
+  const {
+    steps,
+    data,
+    setFields,
+    getFields,
+    title,
+    name,
+    submit,
+    errorMsg,
+    setErrorMsg,
+  } = props;
+  const {
+    RenderStep,
+    currentIndex,
+    totalStep,
+    currentStep,
+    next,
+    back,
+    isLastStep,
+    isFirstStep,
+  } = useMultiStepForm(steps);
+  return (
+    <div className={S.multiform_container}>
+      <div className={S.multiform_container_body}>
+        <h1 className={S.multiform_container_body_header}>{title}</h1>
+        <div className={S.multiform_container_body_box}>{RenderStep}</div>
+        <div className={S.multiform_container_body_button}>
+          {!isFirstStep && (
+            <div>
+              <Element
+                data={{ type: "button", name: "back", text: "Back" }}
+                set={back}
+              />
+            </div>
+          )}
+          {!isLastStep && (
+            <div>
+              <Element
+                data={{ type: "button", name: "next", text: "Next" }}
+                set={next}
+              />
+            </div>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+};
 
 const Register = () => {
   const [inputData, setInputData] = useState({
@@ -14,6 +67,60 @@ const Register = () => {
   });
   const [errorMsg, setErrorMsg] = useState(null);
   const dispatch = useDispatch();
+
+  const step1 = [
+    {
+      type: "text",
+      name: "username",
+      placeholder: "Username",
+    },
+    {
+      type: "text",
+      name: "fullname",
+      placeholder: "Full Name",
+    },
+    {
+      type: "email",
+      name: "email",
+      placeholder: "Email Id",
+    },
+    {
+      type: "password",
+      name: "password",
+      placeholder: "Password",
+    },
+  ];
+
+  const step2 = [
+    {
+      type: "text",
+      name: "otp",
+      placeholder: "OTP",
+    },
+  ];
+
+  const elementRender = (elementJson) => {
+    let element = [];
+    elementJson.forEach((o) => {
+      element.push(
+        <div style={{ margin: "10px 0", height: "35px" }}>
+          <Element
+            key={JSON.stringify(o)}
+            data={o}
+            set={(n, v) => {
+              setErrorMsg(null);
+              setInputData((prev) => ({ ...prev, [n]: v }));
+            }}
+            get={(n) => inputData[n]}
+          />
+        </div>
+      );
+    });
+    return element;
+  };
+
+  let steps = [elementRender(step1), elementRender(step2)];
+
   const inputSchema = [
     {
       type: "text",
@@ -87,10 +194,10 @@ const Register = () => {
       formData.append("username", inputData.username);
       formData.append("password", inputData.password);
       if (inputData.avatar) {
-        formData.append("avatar", inputData.avatar[0]);
+        formData.append("avatar", inputData.avatar);
       }
       if (inputData.cover_img) {
-        formData.append("coverImage", inputData.cover_img?.[0]);
+        formData.append("coverImage", inputData.cover_img);
       }
       const res = await register(formData);
       return res;
@@ -123,7 +230,8 @@ const Register = () => {
   );
   return (
     <>
-      <AuthContainer
+      <StepContainer
+        steps={steps}
         setFields={setInputData}
         getFields={inputData}
         data={inputSchema}

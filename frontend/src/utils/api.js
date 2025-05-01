@@ -84,3 +84,62 @@ export const videosByUser = async () => {
   });
   return res;
 };
+
+export const allVideos = async (b) => {
+  const res = await getMethod({
+    url: b
+      ? `${baseUrl}/video/allvideos?id=${b}`
+      : `${baseUrl}/video/allvideos`,
+  });
+  return res;
+};
+
+// Subscribe API
+export const subscription = async (b) => {
+  const res = await postMethod({
+    url: `${baseUrl}/subscribe/subscription`,
+    b,
+    header: true,
+  });
+
+  return res;
+};
+
+export const unsubscription = async (b) => {
+  const res = await postMethod({
+    url: `${baseUrl}/subscribe/unsubscription`,
+    b,
+    header: true,
+  });
+
+  return res;
+};
+
+// Like API
+export const like = async (b) => {
+  const res = await postMethod({
+    url: `${baseUrl}/like/like`,
+    b,
+    header: true,
+  });
+
+  return res;
+};
+
+export const unlike = async (b) => {
+  const res = await postMethod({
+    url: `${baseUrl}/like/unlike`,
+    b,
+    header: true,
+  });
+
+  return res;
+};
+
+// Analytics
+export const analytics = async (b) => {
+  const res = await getMethod({
+    url: `${baseUrl}/analytics/report?${b}`,
+  });
+  return res;
+};

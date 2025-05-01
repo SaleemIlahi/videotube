@@ -46,6 +46,14 @@ const userSchema = new Schema(
       type: Boolean,
       default: false,
     },
+    emailVerified: {
+      type: Boolean,
+      default: false,
+    },
+    opt: {
+      type: Number,
+      default: -1,
+    },
     videoLimit: {
       type: Number,
       max: [2, "Video upload credits exceeded"],

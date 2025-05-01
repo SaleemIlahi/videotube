@@ -1,4 +1,4 @@
-import { Suspense, useLayoutEffect } from "react";
+import { Suspense, useEffect, useState } from "react";
 import S from "./styles/app.module.scss";
 import Layout from "./pages/Layout";
 import Login from "./pages/Login";
@@ -9,11 +9,16 @@ import {
   Route,
   Navigate,
   Link,
+  useLocation,
 } from "react-router-dom";
 import componentsMap from "./pages/ComponentMap";
 import { useSelector, useDispatch } from "react-redux";
 import { login } from "./utils/api";
-import { LOGIN } from "./features/authSlice";
+import { LOGIN, HISTTORY } from "./features/authSlice";
+import Watch from "./pages/Watch";
+import { ErrorBoundary } from "react-error-boundary";
+import ErrorBoundaries from "./components/ErrorBoundary";
+import { useAsyncHandler } from "./utils/asyncHandler";
 
 const NotFound = () => {
   return (
@@ -29,8 +34,17 @@ const NotFound = () => {
 
 const ProtectedRoute = ({ children }) => {
   const auth = useSelector((state) => state.authReducer.auth);
+  const dispatch = useDispatch();
+  const location = useLocation();
+  const path = location.pathname;
+  const search = location.search;
+  const whiteListPath = ["/", "/sign-in", "/sign-up"];
 
   if (!auth) {
+    if (whiteListPath.every((o) => o !== path)) {
+      dispatch(HISTTORY(`${path}${search}`));
+    }
+
     return <Navigate to="/sign-in" replace />;
   }
 
@@ -38,9 +52,14 @@ const ProtectedRoute = ({ children }) => {
 };
 
 const NonProtectedRoute = ({ children }) => {
-  const auth = useSelector((state) => state.authReducer.auth);
-  if (auth) {
-    return <Navigate to="/home" replace />;
+  const auth = useSelector((state) => state.authReducer);
+
+  if (auth.auth) {
+    if (auth.browserHistory) {
+      return <Navigate to={auth.browserHistory} replace />;
+    } else {
+      return <Navigate to="/home" replace />;
+    }
   }
 
   return children;
@@ -59,22 +78,29 @@ export const Loading = () => {
 
 function App() {
   const dispatch = useDispatch();
-  useLayoutEffect(() => {
-    const isUserLoggedIn = async () => {
-      const res = await login(undefined, "GET");
-      if (res.statusCode === 200) {
-        dispatch(LOGIN(res.data));
-      }
-    };
+  const [loading, setLoading] = useState(false);
+  const [isUserLoggedIn] = useAsyncHandler(async () => {
+    const res = await login(undefined, "GET");
+    if (res.statusCode === 200) {
+      dispatch(LOGIN(res.data));
+      setLoading(false);
+    } else {
+      setLoading(false);
+    }
+  });
+  useEffect(() => {
     isUserLoggedIn();
   }, [dispatch]);
 
   const auth = useSelector((state) => state.authReducer.auth);
 
-  return (
+  return loading ? (
+    <Loading />
+  ) : (
+    // <ErrorBoundary fallback={<ErrorBoundaries />}>
     <div className={S.app}>
-      <Router>
-        <Suspense fallback={<Loading />}>
+      <Suspense fallback={<Loading />}>
+        <Router>
           <Routes>
             <Route
               path="/"
@@ -84,6 +110,14 @@ function App() {
                 </ProtectedRoute>
               }
             >
+              <Route
+                path="/watch"
+                element={
+                  <ProtectedRoute>
+                    <Watch />
+                  </ProtectedRoute>
+                }
+              />
               {auth?.routes?.map((route, i) => {
                 const Component = componentsMap[route.component];
                 return (
@@ -117,9 +151,10 @@ function App() {
             />
             <Route path="*" element={<NotFound />} />
           </Routes>
-        </Suspense>
-      </Router>
+        </Router>
+      </Suspense>
     </div>
+    // </ErrorBoundary>
   );
 }
 

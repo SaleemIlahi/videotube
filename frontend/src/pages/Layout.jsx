@@ -13,7 +13,12 @@ const Sidebar = () => {
 
   return (
     <div className={S.sidebar_cnt}>
-      <div className={S.sidebar_cnt_logo}></div>
+      <div className={S.sidebar_cnt_logo}>
+        <img
+          src="https://res.cloudinary.com/do63p55lo/image/upload/v1735553954/videotube/asset/video_logo3_sivzat.png"
+          alt="logo"
+        />
+      </div>
       <div className={S.sidebar_cnt_menu}>
         {routes?.map((o) => (
           <NavLink
@@ -25,7 +30,10 @@ const Sidebar = () => {
             key={o.id}
             to={o.path}
           >
-            <div className={S.sidebar_cnt_menu_link_item}>{o.label}</div>
+            <div className={S.sidebar_cnt_menu_link_item}>
+              <Icons name={o.id} />
+              <span>{o.label}</span>
+            </div>
           </NavLink>
         ))}
       </div>

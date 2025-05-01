@@ -1,0 +1,50 @@
+@import "./config.module.scss";
+
+.analytics_cnt {
+    width: 100%;
+    height: 90%;
+    padding: 10px;
+    overflow-y: auto;
+
+    .cohorts {
+        width: 100%;
+        display: flex;
+        align-items: center;
+        margin-bottom: 10px;
+        position: sticky;
+        top: 0;
+        // z-index: 1;
+        background: $c-g0;
+
+        .cohorts_item {
+            display: flex;
+            align-items: center;
+            padding: 5px 10px;
+            border: 1px solid $c-g4;
+            border-radius: 5px;
+            margin-right: 10px;
+            cursor: pointer;
+
+            &.active {
+                background: $c-g2;
+
+                span {
+                    color: $c-g10;
+                }
+            }
+
+            span {
+                margin-left: 5px;
+                color: $c-g5;
+            }
+
+            &:hover {
+                background: $c-g2;
+
+                span {
+                    color: $c-g10;
+                }
+            }
+        }
+    }
+}
